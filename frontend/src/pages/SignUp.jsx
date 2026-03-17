@@ -17,7 +17,7 @@ function SignUp(){
       password
     })
 
-    Navigate('/')
+    navigate('/dashboard')
   }
 
   return(

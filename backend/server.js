@@ -16,7 +16,7 @@ app.set('trust proxy', 1);
 app.use(cors({
     origin: [
       'http://localhost:5173',
-      process.env.FRONTEND_URL || 'https://your-frontend.onrender.com',
+      process.env.FRONTEND_URL || 'https://taskcreation-app-frontend.onrender.com',
     ],
     credentials: true, 
 }));

@@ -1,6 +1,18 @@
 import userModel from '../models/userModel.js';
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+
+const buildCookieOptions = () => {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    return {
+        httpOnly: true,                      
+        secure: isProduction,                 
+        sameSite: isProduction ? 'none' : 'lax',
+        path: '/',                            
+    };
+};
 
 const register = async (req,res) =>{
     try {
@@ -23,6 +35,7 @@ const register = async (req,res) =>{
         })
     }
 
+
     const existingUser = await userModel.findOne({email})
 
     if (existingUser) {
@@ -33,8 +46,10 @@ const register = async (req,res) =>{
         })
     }
 
+
     const hashedPassword = await bcrypt.hash(password , 10)
 
+    // Create a new user document
     const User = await userModel.create({
         name,
         email,
@@ -47,12 +62,8 @@ const register = async (req,res) =>{
         {expiresIn : "1d"}
     )
 
-    res.cookie("token" , token , {
-        httpOnly : true , 
-        secure: false,
-        sameSite : "lex",
-        path: '/',
-    })
+
+    res.cookie("token" , token , buildCookieOptions())
 
     return res
         .status(201)
@@ -83,6 +94,7 @@ const login = async (req,res) =>{
             })
         }
 
+        // Find user by email
         const user = await userModel.findOne({email})
 
         if (!user) {
@@ -92,6 +104,7 @@ const login = async (req,res) =>{
                 message : "User not exists"
             })
         }
+
 
         const checkPass = await bcrypt.compare(password , user.password)
 
@@ -103,18 +116,15 @@ const login = async (req,res) =>{
             })
         }
 
+
         const token = jwt.sign(
             {id : user._id} ,
             process.env.JWT_SECRET ,
             {expiresIn : "1d"} 
         )
 
-        res.cookie("token" , token , {
-            httpOnly : true , 
-            secure:false,
-            sameSite : "lax",
-            path: '/',
-        })
+
+        res.cookie("token" , token , buildCookieOptions())
 
         return res.
             status(200)
@@ -131,13 +141,7 @@ const login = async (req,res) =>{
 }
 
 const logout = async (req, res) => {
-
-    res.clearCookie("token", {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false,
-        path: "/"
-    });
+    res.clearCookie("token", buildCookieOptions());
 
     return res.status(200).json({
         message: "Logged out"

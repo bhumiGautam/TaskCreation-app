@@ -8,16 +8,24 @@ function SignUp(){
   const [name,setName] = useState("")
   const [email,setEmail] = useState("")
   const [password,setPassword] = useState("")
+  const [error, setError] = useState("")
 
   const handleRegister = async () => {
+    try {
+      setError("")
 
-    await api.post("/register",{
-      name,
-      email,
-      password
-    })
+      await api.post("/register",{
+        name,
+        email,
+        password
+      })
 
-    navigate('/dashboard')
+      navigate('/dashboard')
+    } catch (err) {
+      const message = err?.response?.data?.message || err.message || "Something went wrong"
+      setError(message)
+      console.error("Register error:", err)
+    }
   }
 
   return(
@@ -55,6 +63,10 @@ function SignUp(){
         >
           Register
         </button>
+
+        {error && (
+          <p className="text-sm text-center mt-3 text-red-600">{error}</p>
+        )}
 
         <p className="text-sm text-center mt-4">
 
